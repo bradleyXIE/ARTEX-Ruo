@@ -324,7 +324,7 @@ func (c Config) newProvider(client *http.Client, limiter *RequestLimiter) (llm.P
 	if err != nil {
 		return nil, err
 	}
-	return withClaudeCompat(prov, compat), nil
+	return withClaudeCompat(withRefusalGuard(prov, c.Format), compat), nil
 }
 
 // IsQuotaExhaustedMessage deliberately recognizes only explicit balance,

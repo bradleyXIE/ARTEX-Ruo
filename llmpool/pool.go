@@ -222,6 +222,11 @@ func statusOf(err error) int {
 	return code
 }
 
+// ErrModelRefused marks a request the model declined (stop_reason "refusal"). It is
+// deliberately never a reason to fail over or retry: another profile would be a way
+// around the refusal, not a fix for it.
+var ErrModelRefused = errors.New("model refused the request")
+
 // shouldFailover reports whether err justifies trying the next profile.
 //
 // Never fails over on context cancellation — that's the user stopping a task or a
@@ -230,6 +235,9 @@ func statusOf(err error) int {
 // over-long request fails identically everywhere.
 func shouldFailover(ctx context.Context, err error) bool {
 	if err == nil {
+		return false
+	}
+	if errors.Is(err, ErrModelRefused) {
 		return false
 	}
 	if ctx.Err() != nil || errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
